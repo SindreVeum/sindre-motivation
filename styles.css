@@ -1,0 +1,517 @@
+:root {
+  --paper: #f2efe8;
+  --ink: #191815;
+  --quiet-ink: rgba(25, 24, 21, 0.58);
+  --hairline: rgba(25, 24, 21, 0.18);
+  color-scheme: light;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Baskerville, Georgia, serif;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--paper);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 22% 15%, rgba(255,255,255,.4), transparent 30rem),
+    var(--paper);
+  font-size: clamp(1.22rem, .72vw + .78rem, 1.7rem);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+
+body.graph-interactive { cursor: grab; }
+body.graph-dragging { cursor: grabbing; user-select: none; }
+
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: .055;
+  content: "";
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.38'/%3E%3C/svg%3E");
+}
+
+::selection { background: rgba(25, 24, 21, .15); }
+
+.skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+  padding: .55rem .8rem;
+  color: var(--paper);
+  background: var(--ink);
+  font: 600 .75rem/1.2 ui-monospace, monospace;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus { transform: none; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+#world {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: .58;
+  pointer-events: none;
+}
+
+.spatial-labels {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.spatial-labels span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--quiet-ink);
+  font: .62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .08em;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+.story { position: relative; z-index: 1; overflow: clip; }
+
+.story-section {
+  position: relative;
+  min-height: 105svh;
+  padding: 20svh clamp(1.4rem, 8vw, 9rem) 24svh;
+}
+
+.passage {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 42rem);
+  margin-inline: auto;
+  text-wrap: pretty;
+}
+
+.passage.narrow { width: min(100%, 36rem); }
+.passage.wide { width: min(100%, 58rem); }
+.passage p { margin: 0 0 1.6em; }
+.passage p:last-child { margin-bottom: 0; }
+
+.sequence { margin: 0; }
+.beat { display: block; }
+.beat + .beat { margin-top: 40svh; }
+.emotional { font-size: clamp(1.65rem, 2.5vw, 2.8rem); line-height: 1.2; }
+
+.prologue {
+  min-height: 125svh;
+  padding: 0;
+}
+
+.prologue-stage,
+.opening-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  pointer-events: none;
+}
+
+.prologue-stage {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 2rem;
+}
+
+.prologue h1 {
+  max-width: 30ch;
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.7rem);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -.015em;
+  text-align: center;
+}
+
+.prologue .scroll-cue {
+  position: static;
+  margin-top: 2.2rem;
+}
+
+.story-cue,
+.opening-cues i {
+  position: absolute;
+  display: block;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.story-cue { top: 48svh; }
+
+.opening {
+  min-height: 318svh;
+  padding: 0;
+}
+
+.opening-stage {
+  position: fixed;
+  inset: 0;
+  overflow: clip;
+}
+
+.opening-shot {
+  position: absolute;
+  margin: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.opening-word {
+  color: var(--ink) !important;
+  font: 400 clamp(.8rem, 1.05vw, 1.05rem)/1.25 "Iowan Old Style", "Palatino Linotype", Palatino, Baskerville, Georgia, serif !important;
+  letter-spacing: 0 !important;
+}
+
+.opening-word::before,
+.opening-word::after {
+  position: absolute;
+  top: 50%;
+  width: max-content;
+  max-width: none;
+  opacity: var(--phrase-context, 0);
+  white-space: nowrap;
+  transform: translateY(-50%);
+  transition: opacity .08s linear;
+}
+
+.opening-word::before {
+  right: calc(100% + .28em);
+  content: attr(data-before);
+  text-align: right;
+}
+
+.opening-word::after {
+  left: 100%;
+  content: attr(data-after);
+  text-align: left;
+}
+
+.opening-word[data-node="financeTrait"]::before {
+  font-size: inherit;
+}
+
+.opening-shot {
+  top: 50%;
+  left: 50%;
+  text-align: center;
+  text-wrap: balance;
+  transform: translate(-50%, -50%);
+}
+
+.opening-shot {
+  width: min(80vw, 15ch);
+  font-size: clamp(2.8rem, 6.5vw, 7.2rem);
+  line-height: .98;
+  letter-spacing: -.04em;
+}
+
+.opening-cues { position: absolute; inset: 0; }
+.opening-cues i:nth-child(1) { top: 7svh; }
+.opening-cues i:nth-child(2) { top: 38svh; }
+.opening-cues i:nth-child(3) { top: 66svh; }
+.opening-cues i:nth-child(4) { top: 92svh; }
+.opening-cues i:nth-child(5) { top: 118svh; }
+.opening-cues i:nth-child(6) { top: 144svh; }
+.opening-cues i:nth-child(7) { top: 170svh; }
+.opening-cues i:nth-child(8) { top: 196svh; }
+.opening-cues i:nth-child(9) { top: 225svh; }
+.opening-cues i:nth-child(10) { top: 270svh; }
+
+em { font-weight: inherit; }
+.counterpoint { white-space: nowrap; }
+.counterpoint.bass { border-bottom: 1px solid var(--hairline); }
+
+.hero-line,
+h2 {
+  font-size: clamp(2.55rem, 5.5vw, 5.8rem);
+  font-weight: 400;
+  line-height: .98;
+  letter-spacing: -.04em;
+  text-wrap: balance;
+}
+
+h2 { margin: 0 0 .7em; }
+
+.scroll-cue {
+  position: absolute;
+  left: clamp(1.4rem, 8vw, 9rem);
+  bottom: 8svh;
+  display: block;
+  color: var(--quiet-ink);
+  font: .65rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.decision {
+  min-height: 540svh;
+  padding: 0;
+}
+
+.decision-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+}
+
+.decision-stage p {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(84vw, 18ch);
+  margin: 0;
+  opacity: 0;
+  text-align: center;
+  text-wrap: balance;
+  transform: translate(-50%, -50%);
+  will-change: opacity, transform;
+}
+
+/* The same words again, in paper, clipped to the growing black dot behind them. */
+.decision-stage p::after {
+  position: absolute;
+  inset: 0;
+  color: var(--paper);
+  content: attr(data-text);
+  clip-path: circle(var(--dot, 0px) at 50% 50%);
+}
+
+.decision-want {
+  font-size: clamp(2.8rem, 6.5vw, 7.2rem);
+  line-height: .98;
+  letter-spacing: -.04em;
+}
+
+.decision-college {
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  line-height: 1.2;
+}
+
+.decision-fragment {
+  width: min(84vw, 14ch);
+  font-size: clamp(2.2rem, 5vw, 4.6rem);
+  line-height: 1;
+  letter-spacing: -.035em;
+}
+
+.decision-sign {
+  z-index: 2;
+  width: min(90vw, 11ch);
+  white-space: nowrap;
+  transform-origin: 50% 50%;
+  font-size: clamp(3.2rem, 9vw, 8.5rem);
+  line-height: .9;
+  letter-spacing: -.05em;
+}
+
+.decision-cues { position: absolute; inset: 0; }
+.decision-cues i { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.decision-cues i:nth-child(1) { top: 48svh; }
+.decision-cues i:nth-child(2) { top: 116svh; }
+.decision-cues i:nth-child(3) { top: 184svh; }
+.decision-cues i:nth-child(4) { top: 248svh; }
+.decision-cues i:nth-child(5) { top: 312svh; }
+.decision-cues i:nth-child(6) { top: 382svh; }
+.decision-cues i:nth-child(7) { top: 470svh; }
+.decision-cues i:nth-child(8) { top: 515svh; }
+
+.portugal { min-height: 210svh; }
+
+/* Sits dead centre, right on top of the node, which stays hidden until this has scrolled clear. */
+.portugal-intro {
+  position: relative;
+  z-index: 1;
+  width: min(88vw, 34rem);
+  margin: 14svh auto 0;
+  text-align: center;
+  text-wrap: balance;
+  will-change: opacity;
+}
+
+/* The gap year and the bubble read as one centred stack, sitting just above the node. */
+.portugal-pair {
+  position: relative;
+  z-index: 1;
+  width: min(88vw, 34rem);
+  margin: 55svh auto 0;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.portugal-pair .beat { margin: 0; }
+.portugal-pair .beat + .beat { margin-top: 1.6em; }
+
+.portugal .sequence { margin-top: 42svh; }
+
+.equations {
+  position: fixed;
+  z-index: 0;
+  inset: 7% 4%;
+  color: rgba(25, 24, 21, .14);
+  font: italic clamp(.85rem, 1.2vw, 1.15rem)/1.1 Georgia, serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+
+.equations span { position: absolute; }
+.equations span:nth-child(1) { top: 10%; left: 5%; transform: rotate(-4deg); }
+.equations span:nth-child(2) { top: 31%; right: 3%; transform: rotate(2deg); }
+.equations span:nth-child(3) { top: 60%; left: 13%; }
+.equations span:nth-child(4) { bottom: 8%; right: 8%; transform: rotate(-2deg); }
+.equations span:nth-child(5) { top: 8%; right: 25%; }
+.equations .signature { top: 69%; right: 17%; font-family: "Bradley Hand", cursive; transform: rotate(-8deg); }
+
+.cities { min-height: 190svh; }
+.cities .passage { width: min(100%, 37rem); }
+.cities .passage.school { margin-top: 56svh; }
+
+/* The closing line parks mid-screen while everything around the word burns off. */
+.people { min-height: 185svh; padding: 58svh 0 0; }
+
+/* Zero height, so the line scrolls up normally and then pins at mid-screen. */
+.people-stage {
+  position: sticky;
+  top: 50svh;
+  height: 0;
+}
+
+.people-line {
+  width: min(84vw, 20ch);
+  margin: 0 auto;
+  opacity: 0;
+  font-size: clamp(1.9rem, 4.2vw, 3.6rem);
+  line-height: 1.12;
+  letter-spacing: -.02em;
+  text-align: center;
+  text-wrap: balance;
+  transform: translateY(-50%);
+  will-change: opacity;
+}
+
+.people-word { position: relative; }
+
+.people-cues { position: absolute; inset: 0; }
+.people-cues i { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.people-cues i:nth-child(1) { top: 58svh; }
+
+.present { min-height: 110svh; }
+.present .passage { padding: clamp(1rem, 3vw, 2rem); }
+.present .passage > p { margin-bottom: 0; }
+.present .passage > .beat { margin-top: .35em; }
+
+.ideas { min-height: 110svh; }
+
+/* Beats marked .tight read as one paragraph, whichever section they sit in. */
+.story-section .passage .beat.tight { margin-top: 1.6em; }
+
+.underlined { border-bottom: 1px solid rgba(25, 24, 21, .35); }
+
+.finance { min-height: 145svh; }
+.finance .passage { margin-inline: 0 auto; }
+.finance .beat + .beat { margin-top: 30svh; }
+.generative { min-height: 150svh; }
+.generative .passage { width: min(100%, 42rem); }
+.generative .sequence { margin-top: 42svh; }
+.generative .beat + .beat { margin-top: 1.1em; }
+
+.collision { min-height: 170svh; }
+.collision .passage { margin: 0; }
+.collision > .passage > p:first-child { width: min(100%, 35rem); margin: 0; }
+.collision-question { width: min(100%, 38rem); margin-top: 60svh; }
+.collision-question h2 { margin: 0; }
+.collision-question p { margin-top: 1.1em; }
+
+.responsibility { min-height: 190svh; }
+.responsibility .beat + .beat { margin-top: 36svh; }
+.phd { min-height: 220svh; }
+.phd .passage { width: min(100%, 40rem); }
+.phd strong { font-weight: 400; font-style: italic; }
+.phd .beat + .beat { margin-top: 44svh; }
+
+.unknown { min-height: 230svh; }
+.unknown .passage { width: min(100%, 40rem); }
+.unknown .beat + .beat { margin-top: 70svh; }
+.unknown .final-line { margin-top: 70svh; }
+
+.future-labels {
+  position: absolute;
+  right: 7vw;
+  bottom: 14%;
+  display: grid;
+  gap: 2.5rem;
+  color: var(--quiet-ink);
+  font: .67rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .09em;
+}
+
+.future-labels span:nth-child(2) { transform: translateX(4rem); }
+.future-labels { display: none; }
+
+.ending { min-height: 205svh; padding-top: 42svh; text-align: center; }
+.ending .passage { margin: 0 auto; }
+.final-line { font-size: clamp(2.4rem, 5.5vw, 5.7rem); line-height: 1.02; letter-spacing: -.035em; }
+.unknown .final-line { max-width: 36rem; font-size: inherit; line-height: inherit; letter-spacing: normal; }
+.signature-name { margin-top: 55svh !important; font-size: clamp(2rem, 4vw, 4rem); }
+.thanks { margin-top: 22svh !important; color: var(--quiet-ink); font-size: .95rem; font-style: italic; }
+
+@media (max-width: 720px) {
+  body { font-size: clamp(1.16rem, 4.8vw, 1.4rem); }
+  .story-section { padding-inline: 1.4rem; }
+  .passage, .opening-copy { margin-left: 0; }
+  .prologue,
+  .opening { padding-inline: 0; }
+  .opening { min-height: 300svh; }
+  .opening-word { font-size: .83rem !important; }
+  .opening-word::before,
+  .opening-word::after { font-size: .68rem; }
+  .opening-word[data-node="financeTrait"]::before {
+    width: 30ch;
+    font-size: .68rem;
+    line-height: 1.2;
+    white-space: normal;
+  }
+  .opening-shot { width: 88vw; font-size: clamp(2.7rem, 13vw, 4.4rem); }
+  .counterpoint { white-space: normal; }
+  .collision { min-height: 170svh; }
+  .future-labels { right: 1.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .scroll-cue i { animation: none; }
+  #world { opacity: .72; }
+}
