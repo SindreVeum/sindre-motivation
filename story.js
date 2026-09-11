@@ -94,7 +94,7 @@ const rawNodes = [
   { id: "positive", type: "trait", p: [2.4, 1.7, -.2], at: .4, label: "positive", before: "overly", after: "," },
   { id: "curious", type: "trait", p: [-3, .15, .55], at: .46, label: "curious", before: "chronically", after: "," },
   { id: "rational", type: "trait", p: [3, .1, -.55], at: .52, label: "rational", before: "at times maybe a little too", after: "." },
-  { id: "financeTrait", type: "trait", p: [.2, -2.35, .3], at: .58, label: "finance", before: "constantly thinking about everything from" },
+  { id: "financeTrait", type: "trait", p: [.2, -2.35, .3], at: .58, label: "financial theory", before: "Constantly thinking about everything from" },
   { id: "music", type: "trait", p: [2.45, -1.7, -.35], at: .64, label: "music", before: "to", after: "\u00a0theory." },
   ...personNodes,
   ...decisionDots,
