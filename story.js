@@ -11,6 +11,7 @@ const bubbleSentence = document.querySelector(".bubble-sentence");
 const peopleLine = document.querySelector(".people-line");
 const peopleContext = [...document.querySelectorAll(".people-context")];
 const peopleWord = document.querySelector(".people-word");
+const endingBubble = document.querySelector(".ending-bubble");
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ink = new THREE.Color(0x191815);
 
@@ -102,12 +103,11 @@ const rawNodes = [
   { id: "paris", type: "place", p: [0, -3.1, 0], at: 3.08, label: "Paris", color: 0x5d7fa8 },
   { id: "berlin", type: "place", p: [0, -4.65, 0], at: 3.16, label: "Berlin", color: 0x7c8f62 },
 
-  // Current-path milestones hang off the people hub and grow rightward as
-  // the letter moves forward in time.
-  { id: "zypp", type: "spring", offset: [1.4, .3, .5], at: 4.31, label: "Zypp", color: 0x4f8a83 },
-  { id: "norway", type: "spring", offset: [2.6, -.2, -.65], at: 4.39, label: "Norway", color: 0xb45f73 },
-  { id: "bi", type: "spring", offset: [3.9, .15, .2], at: 4.47, label: "BI", color: 0x5d7fa8 },
-  { id: "phd", type: "spring", offset: [5.2, -.05, -.3], at: 4.55, label: "PhD?", color: 0x8f5fa8, grow: 1.55, hold: 5.9 },
+  // Current-path milestones arrive with the later reflection on work and study.
+  { id: "zypp", type: "spring", offset: [1.2, .5, .2], at: 10, label: "Zypp", color: 0x4f8a83 },
+  { id: "bi", type: "spring", offset: [-1, .75, -.25], at: 10.05, label: "BI", color: 0x5d7fa8 },
+  { id: "norway", type: "spring", offset: [1.05, -.75, .35], at: 10.1, label: "Norway", color: 0xb45f73 },
+  { id: "phd", type: "spring", offset: [-1.15, -.65, -.4], at: 10.15, label: "PhD?", color: 0x8f5fa8, grow: 1.55 },
 
   { id: "math", type: "idea", offset: [-1.1, -1.6, -.9], at: 5.12, label: "mathematics" },
   { id: "statistics", type: "idea", offset: [-.4, -2, .7], at: 5.22, label: "statistics" },
@@ -299,9 +299,9 @@ const hubReachEdges = hubReachIds.map((id, index) =>
 rawEdges.push(...hubReachEdges);
 const hubGrowthDone = Math.max(...hubReachEdges.map(edge => edge[2] + edge[5]));
 
-// And everything that came home springs out of it.
+// Current milestones branch from Sindre when the letter reaches the present.
 rawEdges.push(...springIds.map(id =>
-  ["people", id, nodes.get(id).at, false, false, .18, .42]));
+  ["sindre", id, nodes.get(id).at, false, false, .18, .42]));
 
 // A second strand a hair off to the side reads as one weighted line. WebGL
 // ignores linewidth, so this is how every line in this piece gets its
@@ -671,7 +671,7 @@ function systemRotation(type) {
 function formation(node) {
   if (node.type === "person") return { amount: 1, source: node.home };
   if (node.type === "spring") {
-    return { amount: range(progress, node.at, node.at + .22), source: nodes.get("people").home };
+    return { amount: range(progress, node.at, node.at + .22), source: nodes.get("sindre").sprite.position };
   }
   if (node.type === "idea") {
     // The people/travel branch is done. These grow out of Sindre himself,
@@ -701,7 +701,9 @@ function formation(node) {
 function convergence(node) {
   if (["self", "anchor", "future"].includes(node.type)) return 0;
   const stagger = node.order % 6 * .018;
-  const firstCollapse = range(progress, 9.98 + stagger, 10.52 + stagger) * (1 - range(progress, 11.18, 11.48));
+  const collapseAt = node.type === "spring" ? 10.42 : 9.98;
+  const collapseEnd = node.type === "spring" ? 10.62 : 10.52;
+  const firstCollapse = range(progress, collapseAt + stagger, collapseEnd + stagger) * (1 - range(progress, 11.18, 11.48));
   const finalCollapse = range(progress, 11.72 + stagger * .25, 12.02);
   return Math.max(firstCollapse, finalCollapse);
 }
@@ -765,7 +767,7 @@ function updateNodes(time) {
   pointer.lerp(pointerTarget, .16);
   for (const node of nodes.values()) {
     if (node.offset) {
-      const anchor = node.type === "idea" ? sindre.sprite.position : node.type === "finance" ? financeCenter : hub.home;
+      const anchor = ["idea", "spring"].includes(node.type) ? sindre.sprite.position : node.type === "finance" ? financeCenter : hub.home;
       node.home.copy(anchor).add(node.offset);
     }
     const formed = formation(node);
@@ -1114,7 +1116,7 @@ function updateLabels() {
     if (!node.label) continue;
     const futureLabel = node.type === "future" && progress >= node.at - .08 && progress < 12.02;
     const heldLabel = node.hold && progress >= node.at && progress < node.hold;
-    const springLabel = node.type === "spring" && progress >= node.at && progress < 5.2;
+    const springLabel = node.type === "spring" && progress >= node.at && progress < node.at + .6;
     const ideaLabel = node.type === "idea" && progress >= node.at && progress < 6.2;
     const financeLabel = node.type === "finance" && progress >= node.at && progress < 7.05;
     const collisionLabel = ["finance", "ai"].includes(node.id) && progress >= 8.05 && progress < 8.9;
@@ -1198,6 +1200,9 @@ function updateEditorialLayers() {
   const decisionFocus = range(progress, 2.02, 2.1) * (1 - range(progress, 2.94, 3.02));
   const closingFocus = range(progress, 11.18, 11.48) * (1 - range(progress, 11.72, 12.02)) * .42;
   canvas.style.opacity = THREE.MathUtils.lerp(reducedMotion ? .72 : .58, 1, Math.max(decisionFocus, closingFocus));
+  const endingGrowth = range(progress, 11.9, 12.18);
+  endingBubble.style.opacity = range(progress, 11.9, 12) * (1 - range(progress, 12.14, 12.18)) * .72;
+  endingBubble.style.transform = `translate(-50%, -50%) scale(${.45 + endingGrowth * 1.35})`;
 }
 
 function render(time = 0) {

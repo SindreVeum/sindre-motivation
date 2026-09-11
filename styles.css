@@ -97,6 +97,22 @@ body::after {
   will-change: transform, opacity;
 }
 
+.ending-bubble {
+  position: fixed;
+  top: 24%;
+  left: 50%;
+  z-index: 0;
+  width: clamp(3.5rem, 7vw, 6rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(25, 24, 21, .55);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(25, 24, 21, .12), inset 0 0 0 1px rgba(25, 24, 21, .12);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(.45);
+  will-change: opacity, transform;
+}
+
 .story { position: relative; z-index: 1; overflow: clip; }
 
 .story-section {
@@ -428,12 +444,10 @@ h2 { margin: 0 0 .7em; }
 .people-cues i { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .people-cues i:nth-child(1) { top: 58svh; }
 
-.present { min-height: 110svh; }
+.present { min-height: 220svh; }
 .present .passage { padding: clamp(1rem, 3vw, 2rem); }
 .present .passage > p { margin-bottom: 0; }
-.present .passage > .beat { margin-top: .35em; }
-
-.ideas { min-height: 110svh; }
+.present .story-cue { top: 130svh; }
 
 /* Beats marked .tight read as one paragraph, whichever section they sit in. */
 .story-section .passage .beat.tight { margin-top: 1.6em; }
@@ -486,6 +500,18 @@ h2 { margin: 0 0 .7em; }
 .final-line { font-size: clamp(2.4rem, 5.5vw, 5.7rem); line-height: 1.02; letter-spacing: -.035em; }
 .unknown .final-line { max-width: 36rem; font-size: inherit; line-height: inherit; letter-spacing: normal; }
 .signature-name { margin-top: 55svh !important; font-size: clamp(2rem, 4vw, 4rem); }
+.signature-name span { position: relative; display: inline-block; }
+.signature-name span::after {
+  position: absolute;
+  top: calc(100% + .45em);
+  left: 50%;
+  width: .18em;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--ink);
+  content: "";
+  transform: translateX(-50%);
+}
 .thanks { margin-top: 22svh !important; color: var(--quiet-ink); font-size: .95rem; font-style: italic; }
 
 @media (max-width: 720px) {
