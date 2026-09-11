@@ -447,6 +447,7 @@ h2 { margin: 0 0 .7em; }
 .present { min-height: 220svh; }
 .present .passage { padding: clamp(1rem, 3vw, 2rem); }
 .present .passage > p { margin-bottom: 0; }
+.present .thought-gap { display: block; margin-top: .75em; }
 .present .story-cue { top: 130svh; }
 
 /* Beats marked .tight read as one paragraph, whichever section they sit in. */

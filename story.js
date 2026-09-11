@@ -108,10 +108,10 @@ const rawNodes = [
   { id: "berlin", type: "place", p: [0, -4.65, 0], at: 3.16, label: "Berlin", color: 0x7c8f62 },
 
   // Current-path milestones arrive with the later reflection on work and study.
-  { id: "zypp", type: "spring", offset: [1.2, .5, .2], at: 10, label: "Zypp", color: 0x4f8a83 },
-  { id: "bi", type: "spring", offset: [-1, .75, -.25], at: 10.05, label: "BI", color: 0x5d7fa8 },
-  { id: "norway", type: "spring", offset: [1.05, -.75, .35], at: 10.1, label: "Norway", color: 0xb45f73 },
-  { id: "phd", type: "spring", offset: [-1.15, -.65, -.4], at: 10.15, label: "PhD?", color: 0x8f5fa8, grow: 1.55 },
+  { id: "zypp", type: "spring", offset: [1.2, .5, .2], at: 9.68, label: "Zypp", color: 0x4f8a83 },
+  { id: "bi", type: "spring", offset: [-1, .75, -.25], at: 9.7, label: "BI", color: 0x5d7fa8 },
+  { id: "norway", type: "spring", offset: [1.05, -.75, .35], at: 9.72, label: "Norway", color: 0xb45f73 },
+  { id: "phd", type: "spring", offset: [-1.15, -.65, -.4], at: 9.74, label: "PhD?", color: 0x8f5fa8, grow: 1.55 },
 
   { id: "math", type: "idea", offset: [-1.1, -1.6, -.9], at: 5.12, label: "mathematics" },
   { id: "statistics", type: "idea", offset: [-.4, -2, .7], at: 5.22, label: "statistics" },
@@ -705,9 +705,9 @@ function formation(node) {
 function convergence(node) {
   if (["self", "anchor", "future"].includes(node.type)) return 0;
   const stagger = node.order % 6 * .018;
-  const collapseAt = node.type === "spring" ? 10.42 : 9.98;
-  const collapseEnd = node.type === "spring" ? 10.62 : 10.52;
-  const firstCollapse = range(progress, collapseAt + stagger, collapseEnd + stagger) * (1 - range(progress, 11.18, 11.48));
+  const collapseAt = node.type === "spring" ? 10.32 : 9.98 + stagger;
+  const collapseEnd = node.type === "spring" ? 10.58 : 10.52 + stagger;
+  const firstCollapse = range(progress, collapseAt, collapseEnd) * (1 - range(progress, 11.18, 11.48));
   const finalCollapse = range(progress, 11.72 + stagger * .25, 12.02);
   return Math.max(firstCollapse, finalCollapse);
 }
@@ -1120,7 +1120,7 @@ function updateLabels() {
     if (!node.label) continue;
     const futureLabel = node.type === "future" && progress >= node.at - .08 && progress < 12.02;
     const heldLabel = node.hold && progress >= node.at && progress < node.hold;
-    const springLabel = node.type === "spring" && progress >= node.at && progress < node.at + .6;
+    const springLabel = node.type === "spring" && progress >= node.at && progress < node.at + .88;
     const ideaLabel = node.type === "idea" && progress >= node.at && progress < 6.2;
     const financeLabel = node.type === "finance" && progress >= node.at && progress < 7.05;
     const collisionLabel = ["finance", "ai"].includes(node.id) && progress >= 8.05 && progress < 8.9;
