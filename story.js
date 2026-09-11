@@ -12,6 +12,10 @@ const peopleLine = document.querySelector(".people-line");
 const peopleContext = [...document.querySelectorAll(".people-context")];
 const peopleWord = document.querySelector(".people-word");
 const endingBubble = document.querySelector(".ending-bubble");
+const signatureFirst = document.querySelector(".signature-first");
+const signatureLast = document.querySelector(".signature-last");
+const signatureNode = document.querySelector(".signature-node");
+const thanks = document.querySelector(".thanks");
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ink = new THREE.Color(0x191815);
 
@@ -1200,9 +1204,15 @@ function updateEditorialLayers() {
   const decisionFocus = range(progress, 2.02, 2.1) * (1 - range(progress, 2.94, 3.02));
   const closingFocus = range(progress, 11.18, 11.48) * (1 - range(progress, 11.72, 12.02)) * .42;
   canvas.style.opacity = THREE.MathUtils.lerp(reducedMotion ? .72 : .58, 1, Math.max(decisionFocus, closingFocus));
-  const endingGrowth = range(progress, 11.9, 12.18);
-  endingBubble.style.opacity = range(progress, 11.9, 12) * (1 - range(progress, 12.14, 12.18)) * .72;
+  const endingGrowth = range(progress, 11.9, 12.13);
+  endingBubble.style.opacity = range(progress, 11.9, 12) * (1 - range(progress, 12.08, 12.12)) * .72;
   endingBubble.style.transform = `translate(-50%, -50%) scale(${.45 + endingGrowth * 1.35})`;
+  const nodeArrival = range(progress, 12.115, 12.135);
+  signatureNode.style.opacity = nodeArrival;
+  signatureNode.style.transform = `scale(${.45 + nodeArrival * .55})`;
+  signatureFirst.style.opacity = range(progress, 12.135, 12.16);
+  signatureLast.style.opacity = range(progress, 12.145, 12.17);
+  thanks.style.opacity = range(progress, 12.17, 12.18);
 }
 
 function render(time = 0) {

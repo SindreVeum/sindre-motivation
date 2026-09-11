@@ -499,20 +499,24 @@ h2 { margin: 0 0 .7em; }
 .ending .passage { margin: 0 auto; }
 .final-line { font-size: clamp(2.4rem, 5.5vw, 5.7rem); line-height: 1.02; letter-spacing: -.035em; }
 .unknown .final-line { max-width: 36rem; font-size: inherit; line-height: inherit; letter-spacing: normal; }
-.signature-name { margin-top: 55svh !important; font-size: clamp(2rem, 4vw, 4rem); }
-.signature-name span { position: relative; display: inline-block; }
-.signature-name span::after {
-  position: absolute;
-  top: calc(100% + .45em);
-  left: 50%;
-  width: .18em;
+.signature-name {
+  margin-top: 55svh !important;
+  font: 400 clamp(.8rem, 1.05vw, 1.05rem)/1.25 "Iowan Old Style", "Palatino Linotype", Palatino, Baskerville, Georgia, serif;
+  letter-spacing: 0;
+}
+.signature-name span { opacity: 0; will-change: opacity; }
+.signature-node {
+  display: block;
+  width: .52rem;
   aspect-ratio: 1;
+  margin: .65rem auto 0;
   border-radius: 50%;
   background: var(--ink);
-  content: "";
-  transform: translateX(-50%);
+  opacity: 0;
+  transform: scale(.45);
+  will-change: opacity, transform;
 }
-.thanks { margin-top: 22svh !important; color: var(--quiet-ink); font-size: .95rem; font-style: italic; }
+.thanks { margin-top: 22svh !important; color: var(--quiet-ink); font-size: .95rem; font-style: italic; opacity: 0; will-change: opacity; }
 
 @media (max-width: 720px) {
   body { font-size: clamp(1.16rem, 4.8vw, 1.4rem); }
