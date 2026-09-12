@@ -473,7 +473,7 @@ h2 { margin: 0 0 .7em; }
 .responsibility { min-height: 190svh; }
 .responsibility .beat + .beat { margin-top: 36svh; }
 .phd { min-height: 220svh; }
-.phd .passage { width: min(100%, 40rem); }
+.phd .passage { width: min(100%, 40rem); margin-right: 0; }
 .phd strong { font-weight: 400; font-style: italic; }
 .phd .beat + .beat { margin-top: 44svh; }
 
@@ -523,6 +523,7 @@ h2 { margin: 0 0 .7em; }
   body { font-size: clamp(1.16rem, 4.8vw, 1.4rem); }
   .story-section { padding-inline: 1.4rem; }
   .passage, .opening-copy { margin-left: 0; }
+  .phd .passage { margin-right: auto; }
   .prologue,
   .opening { padding-inline: 0; }
   .opening { min-height: 300svh; }

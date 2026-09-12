@@ -111,7 +111,7 @@ const rawNodes = [
   { id: "zypp", type: "spring", offset: [1.2, .5, .2], at: 9.68, label: "Zypp", color: 0x4f8a83 },
   { id: "bi", type: "spring", offset: [-1, .75, -.25], at: 9.7, label: "BI", color: 0x5d7fa8 },
   { id: "norway", type: "spring", offset: [1.05, -.75, .35], at: 9.72, label: "Norway", color: 0xb45f73 },
-  { id: "phd", type: "spring", offset: [-1.15, -.65, -.4], at: 9.74, label: "PhD?", color: 0x8f5fa8, grow: 1.55 },
+  { id: "phd", type: "spring", offset: [-1.15, -.65, -.4], at: 9.74, label: "PhD", color: 0x8f5fa8, grow: 1.55 },
 
   { id: "math", type: "idea", offset: [-1.1, -1.6, -.9], at: 5.12, label: "mathematics" },
   { id: "statistics", type: "idea", offset: [-.4, -2, .7], at: 5.22, label: "statistics" },
@@ -491,6 +491,9 @@ const pointerTarget = new THREE.Vector2();
 const cameraTarget = new THREE.Vector3();
 let keyboardTargetIndex = -1;
 let keyboardScrollRaf = 0;
+let wheelScrollRaf = 0;
+let wheelTargetY = scrollY;
+let wheelLastTime = 0;
 let pointerInside = false;
 let activePointerId = null;
 let draggedNode = null;
@@ -508,6 +511,8 @@ const cameraUp = new THREE.Vector3();
 const inverseWorldQuaternion = new THREE.Quaternion();
 const POINTER_RADIUS = 120;
 const NODE_HIT_RADIUS = 20;
+const MAX_WHEEL_SPEED = 1.25;
+const MAX_WHEEL_QUEUE = .85;
 
 function graphInteraction(value = progress) {
   const rotationLife = Math.max(1 - range(value, 10.3, 10.58), range(value, 11.18, 11.48));
@@ -1280,12 +1285,50 @@ const cancelKeyboardScroll = () => {
   if (keyboardScrollRaf) cancelAnimationFrame(keyboardScrollRaf);
   keyboardScrollRaf = 0;
 };
-addEventListener("wheel", cancelKeyboardScroll, { passive: true });
-addEventListener("touchstart", cancelKeyboardScroll, { passive: true });
+
+const cancelWheelScroll = () => {
+  if (wheelScrollRaf) cancelAnimationFrame(wheelScrollRaf);
+  wheelScrollRaf = 0;
+  wheelLastTime = 0;
+  wheelTargetY = scrollY;
+};
+
+const stepWheelScroll = now => {
+  const elapsed = Math.min((now - wheelLastTime) / 1000, .05);
+  wheelLastTime = now;
+  const distance = wheelTargetY - scrollY;
+  const step = Math.sign(distance) * Math.min(Math.abs(distance), height * MAX_WHEEL_SPEED * elapsed);
+  scrollTo({ top: scrollY + step, behavior: "instant" });
+  if (Math.abs(distance) <= Math.abs(step) + .5) cancelWheelScroll();
+  else wheelScrollRaf = requestAnimationFrame(stepWheelScroll);
+};
+
+addEventListener("wheel", event => {
+  cancelKeyboardScroll();
+  if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+  event.preventDefault();
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? height : 1;
+  const delta = event.deltaY * unit;
+  const queued = wheelTargetY - scrollY;
+  if (queued && Math.sign(delta) !== Math.sign(queued)) wheelTargetY = scrollY;
+  const maxScroll = document.documentElement.scrollHeight - height;
+  wheelTargetY = clamp(
+    wheelTargetY + delta,
+    Math.max(0, scrollY - height * MAX_WHEEL_QUEUE),
+    Math.min(maxScroll, scrollY + height * MAX_WHEEL_QUEUE),
+  );
+  if (!wheelScrollRaf) {
+    wheelLastTime = performance.now();
+    wheelScrollRaf = requestAnimationFrame(stepWheelScroll);
+  }
+}, { passive: false });
+
+addEventListener("touchstart", () => { cancelKeyboardScroll(); cancelWheelScroll(); }, { passive: true });
 addEventListener("keydown", event => {
   if (event.defaultPrevented || event.repeat || /input|textarea|select/i.test(event.target.tagName) || event.target.isContentEditable) return;
   if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
   event.preventDefault();
+  cancelWheelScroll();
   moveByCue(event.key === "ArrowRight" ? 1 : -1);
 });
 
@@ -1320,6 +1363,7 @@ function pointOnDragPlane(target = dragPoint) {
 
 addEventListener("pointerdown", event => {
   cancelKeyboardScroll();
+  cancelWheelScroll();
   if (event.button !== 0 || graphInteraction() < .5) return;
   setPointer(event);
   activePointerId = event.pointerId;
